@@ -60,23 +60,48 @@
 ### `search_listings`
 
 - **What it does:**
+This tool filters the dataset by price and size, and gives a score to the items that are left based on how many of the description's keywords appear in each listing, and returns the best matches.
+
 - **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
+description (string)
+size (string or None)
+max_price (float or None)
+
 - **Returns:**
+A list of matching listings with best matches first.
+
 - **When it has nothing:**
+An empty list is returned when there is no match.
 
 ### `suggest_outfit`
 
 - **What it does:**
+Takes in a new item and the user's wardrobe and suggests one or two outfits.
+
 - **Inputs:**
+new_item (dict)
+wardrobe (dict)
+
 - **Returns:**
+Returns a non-empty string which is one or two suggestions for how to style a new item using a user's wardrobe.
+
 - **When it has nothing:**
+If there is no wardrobe, the agent returns general styling advice instead of returning None/an empty answer.
 
 ### `create_fit_card`
 
 - **What it does:**
+Asks the model to write a short caption about the find using the outfit suggestion from suggest_outfit()
+
 - **Inputs:**
+outfit (string, comes from suggest_outfit())
+new_item (dict)
+
 - **Returns:**
+A two to four sentence caption regarding the outfit and item suggestions which reads like a real post.
+
 - **When it has nothing:**
+When outfit is empty or whitespace, it returns a descriptive message prompting the user to try again after getting an outfit suggestion.
 
 ---
 
@@ -94,12 +119,20 @@
      function have to be real. -->
 
 **Branch rule:**
+If search_listings returns an empty list, put a message in session["error"] that tells the user what they should change in the prompt, and stop without calling suggest_outfit() or create_fit_card(). Otherwise, take the first result and go to suggest_outfit.
 
 **Where it lives:** `agent.py::run_agent`
 
 **How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+The query is parsed using regex in parse_query. This pulls out specific parts of the prompt such as the price (under 30, max 25, etc.), the size (M, 8.5, etc.), and the description of the item.
 
 **What moves through the session:** <!-- which fields, in what order -->
+1. Query: the user's query
+2. Parsed: the user's query after parsing which is used by search_listings
+3. search_results: result from search_listings which the branch checks
+4. selected_item: the first item from search_results which is used by suggest_outfit and create_fit_card
+5. outfit_suggestion: result from suggest_outfit which is used by create_fit_card
+6. fit_card: result from create_fit_card
 
 ---
 
